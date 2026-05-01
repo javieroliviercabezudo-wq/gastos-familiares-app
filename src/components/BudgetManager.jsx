@@ -12,6 +12,7 @@ export default function BudgetManager() {
   const budgetItems = useSelector(state => state.expenses.budgetItems)  
   const [selectedCategory, setSelectedCategory] = useState(categories[0] || '')
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR)
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [form, setForm] = useState({
     description: '',
     amount: '',
@@ -89,7 +90,8 @@ export default function BudgetManager() {
 
   const filteredBudgets = budgetItems.filter(b => 
     b.category === selectedCategory && 
-    b.year === selectedYear
+    b.year === selectedYear &&
+    parseInt(b.month) === selectedMonth
   )
 
   return (
@@ -112,6 +114,21 @@ export default function BudgetManager() {
         >
           {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
+
+        <select 
+          className="month-selector"
+          value={selectedMonth} 
+          onChange={e => setSelectedMonth(parseInt(e.target.value))}
+        >
+          {MESES.map((m, i) => <option key={i} value={i}>{m}</option>)}
+        </select>
+      </div>
+
+      <div className="total-budget">
+        <span>Total presupuestado para {selectedCategory} en {MESES[selectedMonth]}:</span>
+        <span className="total-amount">
+          ${filteredBudgets.reduce((sum, b) => sum + b.amount, 0).toFixed(2)}
+        </span>
       </div>
 
       <form onSubmit={handleSubmit} className="budget-form">

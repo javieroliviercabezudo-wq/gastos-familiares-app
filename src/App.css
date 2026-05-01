@@ -333,11 +333,34 @@ header h1 {
   border-bottom: none;
 }
 
-.summary-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-}
+  .summary-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+  }
+
+  .category-details {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+
+  .category-details h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text);
+    font-size: 0.9rem;
+  }
+
+  .detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
 
 .summary-cat {
   font-weight: 600;
@@ -638,17 +661,44 @@ header h1 {
   margin-bottom: 1.5rem;
 }
 
-.category-selector, .year-selector {
-  flex: 1;
-  padding: 0.75rem;
-  border: 2px solid var(--primary);
-  border-radius: var(--radius);
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text);
-  background: var(--card);
-  cursor: pointer;
-}
+  .category-selector, .year-selector {
+    flex: 1;
+    padding: 0.75rem;
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--card);
+    cursor: pointer;
+  }
+
+  .month-selector {
+    padding: 0.75rem;
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--card);
+    cursor: pointer;
+  }
+
+  .total-budget {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: var(--card);
+    border-radius: var(--radius);
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    font-weight: 600;
+  }
+
+  .total-amount {
+    color: var(--primary);
+    font-size: 1.1rem;
+  }
 
 .budget-form {
   display: flex;

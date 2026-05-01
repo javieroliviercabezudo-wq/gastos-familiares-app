@@ -12,6 +12,8 @@ export default function Summary() {
   const budgetItems = useSelector(state => state.expenses.budgetItems)
   const categories = useSelector(state => state.expenses.categories)
 
+  const [selectedCategory, setSelectedCategory] = useState(null)
+
   const filteredExpenses = expenses.filter(e => {
     const d = new Date(e.date)
     return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear
@@ -24,6 +26,18 @@ export default function Summary() {
       .filter(b => b.category === cat && parseInt(b.month) === month && b.year === year)
       .reduce((sum, b) => sum + b.amount, 0)
   }
+
+  const handleCategoryClick = (cat) => {
+    setSelectedCategory(selectedCategory === cat ? null : cat)
+  }
+
+  const selectedCatExpenses = selectedCategory ? 
+    filteredExpenses.filter(e => e.category === selectedCategory) : []
+  
+  const selectedCatBudgets = selectedCategory ? 
+    budgetItems.filter(b => b.category === selectedCategory && 
+      parseInt(b.month) === selectedMonth && 
+      b.year === selectedYear) : []
 
   return (
     <div className="summary">
@@ -52,7 +66,7 @@ export default function Summary() {
 
         return (
           <div key={cat} className="summary-row">
-            <div className="summary-header">
+            <div className="summary-header" onClick={() => handleCategoryClick(cat)} style={{cursor: 'pointer'}}>
               <span className="summary-cat">{cat}</span>
             </div>
             <div className="category-bars">
@@ -77,6 +91,33 @@ export default function Summary() {
                 <span className="hbar-value">${budget > 0 ? Math.round(budget) : 0}</span>
               </div>
             </div>
+            {selectedCategory === cat && (
+              <div className="category-details">
+                <h4>Gastos de {cat} en {MESES[selectedMonth]}</h4>
+                {selectedCatExpenses.length === 0 ? (
+                  <p className="empty">No hay gastos para {cat}</p>
+                ) : (
+                  selectedCatExpenses.map(expense => (
+                    <div key={expense.id} className="detail-item">
+                      <span>{expense.description}</span>
+                      <span>${parseFloat(expense.amount).toFixed(2)}</span>
+                      <span>{new Date(expense.date).toLocaleDateString()}</span>
+                    </div>
+                  ))
+                )}
+                <h4>Presupuestos de {cat} en {MESES[selectedMonth]}</h4>
+                {selectedCatBudgets.length === 0 ? (
+                  <p className="empty">No hay presupuestos para {cat}</p>
+                ) : (
+                  selectedCatBudgets.map(item => (
+                    <div key={item.id} className="detail-item">
+                      <span>{item.description}</span>
+                      <span>${parseFloat(item.amount).toFixed(2)}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         )
       })}
