@@ -1,0 +1,16 @@
+{
+  "rubros": [
+    { "id": "r1", "name": "Alimentación", "iconUrl": "", "color": "#ff5722" },
+    { "id": "r2", "name": "Transporte", "iconUrl": "", "color": "#03a9f4" }
+  ],
+  "presupuestos": [
+    { "id": "p1", "rubroId": "r1", "month": 5, "year": 2026, "amount": 500 },
+    { "id": "p2", "rubroId": "r2", "month": 5, "year": 2026, "amount": 300 },
+    { "id": "p3", "annualAmount": 12000 }
+  ],
+  "gastos": [
+    { "id": "g1", "date": "2026-05-03", "rubroId": "r1", "amount": 150, "description": "Supermercado", "responsableId": "fam1" },
+    { "id": "g2", "date": "2026-05-15", "rubroId": "r2", "amount": 80, "description": "Transporte público", "responsableId": "fam2" },
+    { "id": "g3", "date": "2026-04-20", "rubroId": "r1", "amount": 200, "description": "Carnicería", "responsableId": "fam1" }
+  ]
+}
