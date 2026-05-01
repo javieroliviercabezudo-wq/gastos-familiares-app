@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { addBudgetItemToSupabase, deleteBudgetItemFromSupabase, updateBudgetItem } from '../features/expenses/expenseSlice'
 
@@ -10,7 +10,7 @@ export default function BudgetManager() {
   const dispatch = useDispatch()
   const categories = useSelector(state => state.expenses.categories)
   const budgetItems = useSelector(state => state.expenses.budgetItems)  
-  const [selectedCategory, setSelectedCategory] = useState(categories[0] || '')
+  const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR)
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [form, setForm] = useState({
@@ -19,6 +19,13 @@ export default function BudgetManager() {
     months: Array(12).fill(false)
   })
   const [editingId, setEditingId] = useState(null)
+
+  // Initialize selectedCategory when categories load
+  useEffect(() => {
+    if (categories.length > 0 && !selectedCategory) {
+      setSelectedCategory(categories[0])
+    }
+  }, [categories, selectedCategory])
 
   const handleMonthToggle = (index) => {
     const newMonths = [...form.months]
@@ -94,6 +101,8 @@ export default function BudgetManager() {
     parseInt(b.month) === selectedMonth
   )
 
+  const totalBudget = filteredBudgets.reduce((sum, b) => sum + b.amount, 0)
+
   return (
     <div className="budget-manager">
       <h2>Presupuesto</h2>
@@ -126,9 +135,7 @@ export default function BudgetManager() {
 
       <div className="total-budget">
         <span>Total presupuestado para {selectedCategory} en {MESES[selectedMonth]}:</span>
-        <span className="total-amount">
-          ${filteredBudgets.reduce((sum, b) => sum + b.amount, 0).toFixed(2)}
-        </span>
+        <span className="total-amount">${totalBudget.toFixed(2)}</span>
       </div>
 
       <form onSubmit={handleSubmit} className="budget-form">
@@ -180,16 +187,15 @@ export default function BudgetManager() {
         </div>
       </form>
 
-      <h3>{selectedCategory} - {selectedYear} - Presupuestos Cargados</h3>
+      <h3>{selectedCategory} - {selectedYear} - {MESES[selectedMonth]} - Presupuestos Cargados</h3>
       {filteredBudgets.length === 0 ? (
-        <p className="empty">No hay presupuestos cargados para {selectedCategory} en {selectedYear}</p>
+        <p className="empty">No hay presupuestos cargados para {selectedCategory} en {MESES[selectedMonth]}</p>
       ) : (
         <div className="budget-list">
           {filteredBudgets.map(item => (
             <div key={item.id} className="budget-item">
               <div className="budget-info">
                 <span className="budget-desc">{item.description}</span>
-                <span className="budget-month">{getMonthName(item.month)}</span>
                 <span className="budget-amount">${parseFloat(item.amount).toFixed(2)}</span>
               </div>
               <div className="budget-actions">

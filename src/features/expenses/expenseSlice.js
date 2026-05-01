@@ -38,6 +38,19 @@ const deleteExpenseFromSupabase = createAsyncThunk(
   }
 )
 
+const updateExpenseInSupabase = createAsyncThunk(
+  'expenses/updateExpense',
+  async ({ id, updates }) => {
+    const { data, error } = await supabase
+      .from('expenses')
+      .update(updates)
+      .eq('id', id)
+      .select()
+    if (error) throw error
+    return data[0]
+  }
+)
+
 const fetchBudgetItems = createAsyncThunk(
   'expenses/fetchBudgetItems',
   async () => {
@@ -189,6 +202,17 @@ const expenseSlice = createSlice({
       .addCase(deleteExpenseFromSupabase.fulfilled, (state, action) => {
         state.expenses = state.expenses.filter(e => e.id !== action.payload)
       })
+      .addCase(updateExpenseInSupabase.fulfilled, (state, action) => {
+        state.expenses = state.expenses.map(expense => 
+          expense.id === action.payload.id 
+            ? { 
+                ...expense, 
+                ...action.payload, 
+                amount: parseFloat(action.payload.amount || expense.amount) 
+              }
+            : expense
+        )
+      })
       .addCase(fetchBudgetItems.fulfilled, (state, action) => {
         state.budgetItems = action.payload.map(b => ({
           ...b,
@@ -218,7 +242,7 @@ export const {
 } = expenseSlice.actions
 
 export { 
-  fetchExpenses, addExpenseToSupabase, deleteExpenseFromSupabase,
+  fetchExpenses, addExpenseToSupabase, deleteExpenseFromSupabase, updateExpenseInSupabase,
   fetchBudgetItems, addBudgetItemToSupabase, deleteBudgetItemFromSupabase,
   fetchCategories, addCategoryToSupabase, deleteCategoryFromSupabase
 }

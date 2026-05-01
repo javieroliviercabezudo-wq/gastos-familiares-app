@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend } from 'chart.js'
 import { Bar } from 'react-chartjs-2'
+import { parseLocalDate } from '../utils/dateUtils'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 
@@ -14,7 +15,7 @@ export default function YearChart() {
   
   const yearExpenses = Array(12).fill(0)
   expenses.forEach(e => {
-    const d = new Date(e.date)
+    const d = parseLocalDate(e.date)
     if (d.getFullYear() === selectedYear) {
       yearExpenses[d.getMonth()] += e.amount
     }

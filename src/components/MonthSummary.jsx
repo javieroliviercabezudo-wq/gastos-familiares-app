@@ -1,4 +1,5 @@
 import { useSelector } from 'react-redux'
+import { parseLocalDate } from '../utils/dateUtils'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
@@ -11,7 +12,7 @@ export default function MonthSummary() {
   const currentYear = new Date().getFullYear()
   
   const monthExpenses = expenses.filter(e => {
-    const d = new Date(e.date)
+    const d = parseLocalDate(e.date)
     return d.getMonth() === currentMonth && d.getFullYear() === currentYear
   })
 

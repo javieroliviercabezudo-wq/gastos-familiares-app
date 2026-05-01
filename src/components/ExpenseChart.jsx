@@ -1,6 +1,7 @@
 import { useSelector } from 'react-redux'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { Pie } from 'react-chartjs-2'
+import { parseLocalDate } from '../utils/dateUtils'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -13,7 +14,7 @@ export default function ExpenseChart() {
   if (expenses.length === 0) return <p className="empty">No hay datos para mostrar</p>
 
   const monthExpenses = expenses.filter(e => {
-    const d = new Date(e.date)
+    const d = parseLocalDate(e.date)
     return d.getMonth().toString() === currentMonth
   })
 

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
+import { parseLocalDate, formatDisplayDate } from '../utils/dateUtils'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const CURRENT_YEAR = new Date().getFullYear()
@@ -15,7 +16,7 @@ export default function Summary() {
   const [selectedCategory, setSelectedCategory] = useState(null)
 
   const filteredExpenses = expenses.filter(e => {
-    const d = new Date(e.date)
+    const d = parseLocalDate(e.date)
     return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear
   })
 
@@ -101,7 +102,7 @@ export default function Summary() {
                     <div key={expense.id} className="detail-item">
                       <span>{expense.description}</span>
                       <span>${parseFloat(expense.amount).toFixed(2)}</span>
-                      <span>{new Date(expense.date).toLocaleDateString()}</span>
+                      <span>{formatDisplayDate(expense.date)}</span>
                     </div>
                   ))
                 )}
@@ -123,7 +124,7 @@ export default function Summary() {
       })}
       <div className="accumulated">
         <h3>Acumulado Anual {selectedYear}</h3>
-        <p>Total gastos: ${expenses.filter(e => new Date(e.date).getFullYear() === selectedYear).reduce((sum, e) => sum + e.amount, 0).toFixed(2)}</p>
+        <p>Total gastos: ${expenses.filter(e => parseLocalDate(e.date).getFullYear() === selectedYear).reduce((sum, e) => sum + e.amount, 0).toFixed(2)}</p>
         <p>Total presupuestos: ${budgetItems.filter(b => b.year === selectedYear).reduce((sum, b) => sum + b.amount, 0).toFixed(2)}</p>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { deleteExpenseFromSupabase } from '../features/expenses/expenseSlice'
+import { parseLocalDate, formatDisplayDate } from '../utils/dateUtils'
 
 export default function ExpenseList() {
   const expenses = useSelector(state => state.expenses.expenses)
@@ -10,10 +11,10 @@ export default function ExpenseList() {
   
   const monthExpenses = expenses
     .filter(e => {
-      const d = new Date(e.date)
+      const d = parseLocalDate(e.date)
       return d.getMonth() === currentMonth && d.getFullYear() === currentYear
     })
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date))
 
   if (monthExpenses.length === 0) return <p className="empty">No hay gastos registrados para este mes</p>
 
@@ -26,7 +27,7 @@ export default function ExpenseList() {
             <div className="expense-info">
               <span className="description">{expense.description}</span>
               <span className="category">{expense.category}</span>
-              <span className="date">{new Date(expense.date).toLocaleDateString()}</span>
+              <span className="date">{formatDisplayDate(expense.date)}</span>
             </div>
             <div className="expense-amount">
               <span>${parseFloat(expense.amount).toFixed(2)}</span>

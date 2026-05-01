@@ -1,6 +1,13 @@
 import { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { addExpenseToSupabase, updateExpense, deleteExpenseFromSupabase } from '../features/expenses/expenseSlice'
+import { addExpenseToSupabase, deleteExpenseFromSupabase, updateExpenseInSupabase } from '../features/expenses/expenseSlice'
+import { formatDisplayDate } from '../utils/dateUtils'
+
+const getTodayDate = () => {
+  // Returns date in YYYY-MM-DD respecting the user's local timezone.
+  // Using en-CA locale produces the correct ISO‑like format for <input type="date">.
+  return new Date().toLocaleDateString('en-CA');
+};
 
 export default function ExpenseForm() {
   const dispatch = useDispatch()
@@ -10,7 +17,7 @@ export default function ExpenseForm() {
     description: '',
     amount: '',
     category: categories[0] || '',
-    date: new Date().toISOString().split('T')[0]
+    date: getTodayDate()
   })
   const [editingId, setEditingId] = useState(null)
 
@@ -19,9 +26,19 @@ export default function ExpenseForm() {
     if (!form.description || !form.amount) return
     
     if (editingId) {
-      dispatch(updateExpense({ id: editingId, updates: form }))
+      // Editar gasto existente - usar thunk de Supabase
+      dispatch(updateExpenseInSupabase({ 
+        id: editingId, 
+        updates: { 
+          description: form.description,
+          amount: parseFloat(form.amount),
+          category: form.category,
+          date: form.date
+        } 
+      }))
       setEditingId(null)
     } else {
+      // Cargar nuevo gasto
       const expense = {
         id: Date.now().toString(),
         ...form,
@@ -30,20 +47,22 @@ export default function ExpenseForm() {
       dispatch(addExpenseToSupabase(expense))
     }
     
+    // Limpiar formulario
     setForm({
       description: '',
       amount: '',
       category: categories[0] || '',
-      date: new Date().toISOString().split('T')[0]
+      date: getTodayDate()
     })
   }
 
   const handleEdit = (expense) => {
+    // Cargar datos del gasto en el formulario
     setForm({
       description: expense.description,
       amount: expense.amount.toString(),
       category: expense.category,
-      date: expense.date
+      date: expense.date // Usa la fecha del gasto, no la actual
     })
     setEditingId(expense.id)
   }
@@ -53,7 +72,7 @@ export default function ExpenseForm() {
       description: '',
       amount: '',
       category: categories[0] || '',
-      date: new Date().toISOString().split('T')[0]
+      date: getTodayDate()
     })
     setEditingId(null)
   }
@@ -105,7 +124,7 @@ export default function ExpenseForm() {
               <div className="expense-info">
                 <span className="expense-desc">{expense.description}</span>
                 <span className="expense-cat">{expense.category}</span>
-                <span className="expense-date">{new Date(expense.date).toLocaleDateString()}</span>
+                <span className="expense-date">{formatDisplayDate(expense.date)}</span>
                 <span className="expense-amount">${parseFloat(expense.amount).toFixed(2)}</span>
               </div>
               <div className="expense-actions">
