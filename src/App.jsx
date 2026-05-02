@@ -27,7 +27,6 @@ function App() {
         <header>
           <h1>Gestion de Gastos Familiares</h1>
         </header>
-        <TabNavigation />
         <main>
           <Routes>
             <Route path="/" element={
@@ -46,6 +45,7 @@ function App() {
             <Route path="/resumen" element={<Summary />} />
           </Routes>
         </main>
+        <TabNavigation />
       </div>
     </BrowserRouter>
   )
