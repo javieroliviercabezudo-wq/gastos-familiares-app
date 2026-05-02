@@ -279,27 +279,7 @@ export default function ExpenseForm() {
         )}
       </form>
 
-      <div className="expense-list">
-        <h3>Gastos Cargados</h3>
-        {expenses.length === 0 ? (
-          <p className="empty">No hay gastos cargados</p>
-        ) : (
-          expenses.map(expense => (
-            <div key={expense.id} className="expense-item">
-              <div className="expense-info">
-                <span className="expense-desc">{expense.description}</span>
-                <span className="expense-cat">{expense.category}</span>
-                <span className="expense-date">{formatDisplayDate(expense.date)}</span>
-                <span className="expense-amount">${parseFloat(expense.amount).toFixed(2)}</span>
-              </div>
-              <div className="expense-actions">
-                <button className="edit-btn" onClick={() => handleEdit(expense)}>✏️</button>
-                <button className="tag-delete" onClick={() => dispatch(deleteExpenseFromSupabase(expense.id))}>×</button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      
     </div>
   )
 }

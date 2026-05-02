@@ -30,13 +30,9 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={
-              <div className="grid">
-                <div className="left">
-                  <ExpenseForm />
-                  <ExpenseList />
-                </div>
-                <div className="right">
-                </div>
+              <div className="page-gastos">
+                <ExpenseForm />
+                <ExpenseList />
               </div>
             } />
             <Route path="/presupuesto" element={<BudgetManager />} />

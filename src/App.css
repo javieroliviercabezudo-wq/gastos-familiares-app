@@ -75,6 +75,18 @@ header h1 {
   gap: 2rem;
 }
 
+.page-gastos {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .page-gastos {
+    gap: 1rem;
+  }
+}
+
 .left, .right {
   display: flex;
   flex-direction: column;
