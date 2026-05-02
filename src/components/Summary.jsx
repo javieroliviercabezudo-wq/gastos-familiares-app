@@ -18,6 +18,11 @@ export default function Summary() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedCategory, setSelectedCategory] = useState(null)
 
+  const formatK = (val) => {
+    if (val >= 1000) return `$${(val / 1000).toFixed(1)}k`
+    return `$${Math.round(val)}`
+  }
+
   // Datos para el gráfico de barras anual (todos los meses)
   const monthlyData = MESES.map((mes, monthIndex) => {
     const monthExpenses = expenses.filter(e => {
@@ -119,27 +124,35 @@ export default function Summary() {
         </div>
 
         <div className="monthly-chart">
-          {monthlyData.map(m => (
-            <div key={m.month} className="month-column">
-              <div className="month-bars">
-                <div 
-                  className="month-bar expense-bar" 
-                  style={{ height: `${(m.spent / maxValue) * 100}%` }}
-                  title={`${m.monthName}: $${m.spent.toFixed(2)}`}
-                ></div>
-                <div 
-                  className="month-bar budget-bar" 
-                  style={{ height: `${(m.budget / maxValue) * 100}%` }}
-                  title={`Presupuesto: $${m.budget.toFixed(2)}`}
-                ></div>
+          {monthlyData.map(m => {
+            const spentPct = maxValue > 0 ? (m.spent / maxValue) * 100 : 0
+            const budgetPct = maxValue > 0 ? (m.budget / maxValue) * 100 : 0
+            return (
+              <div key={m.month} className="month-column">
+                <div className="month-values">
+                  <span className="expense-color">{formatK(m.spent)}</span>
+                  <span className="budget-color">{formatK(m.budget)}</span>
+                </div>
+                <div className="month-bars">
+                  <div className="bar-wrapper">
+                    <div
+                      className="month-bar expense-bar"
+                      style={{ height: `${spentPct}%` }}
+                      title={`${m.monthName}: $${m.spent.toFixed(2)}`}
+                    ></div>
+                  </div>
+                  <div className="bar-wrapper">
+                    <div
+                      className="month-bar budget-bar"
+                      style={{ height: `${budgetPct}%` }}
+                      title={`Presupuesto: $${m.budget.toFixed(2)}`}
+                    ></div>
+                  </div>
+                </div>
+                <div className="month-label">{m.monthShort}</div>
               </div>
-              <div className="month-label">{m.monthShort}</div>
-              <div className="month-values">
-                <span className="expense-color">${Math.round(m.spent)}</span>
-                <span className="budget-color">${Math.round(m.budget)}</span>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 
