@@ -1098,3 +1098,12 @@ header h1 {
   height: 16px;
   cursor: pointer;
 }
+
+/* CSV Export Buttons */
+.csv-btn {
+  background: #8b5cf6;
+}
+
+.csv-btn:hover {
+  background: #7c3aed;
+}
