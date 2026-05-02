@@ -8,7 +8,6 @@ import ExpenseList from './components/ExpenseList'
 import BudgetManager from './components/BudgetManager'
 import CategoryManager from './components/CategoryManager'
 import Summary from './components/Summary'
-import YearChart from './components/YearChart'
 import DataManager from './components/DataManager'
 import './App.css'
 
@@ -44,16 +43,7 @@ function App() {
             <Route path="/presupuesto" element={<BudgetManager />} />
             <Route path="/categorias" element={<CategoryManager />} />
             <Route path="/datos" element={<DataManager />} />
-            <Route path="/resumen" element={
-              <div className="grid">
-                <div className="left">
-                  <Summary />
-                </div>
-                <div className="right">
-                  <YearChart />
-                </div>
-              </div>
-            } />
+            <Route path="/resumen" element={<Summary />} />
           </Routes>
         </main>
       </div>
