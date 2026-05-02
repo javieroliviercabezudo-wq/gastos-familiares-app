@@ -93,7 +93,8 @@ export default function Summary() {
     }
   })
 
-  const maxLineValue = Math.max(...lineChartData.map(m => Math.max(m.spent || 0, m.budget || 0)), 1)
+  // Calcular valor máximo incluyendo todos los meses (inclusive con datos 0)
+  const maxLineValue = Math.max(...lineChartData.map(m => Math.max(m.spent || 0, m.budget || 0)), 100) // Mínimo 100 para evitar gráfico achatado
 
   return (
     <div className="summary">
@@ -261,53 +262,75 @@ export default function Summary() {
           </div>
           
           <div className="line-chart-container">
-            <svg viewBox="0 0 1200 300" className="line-chart">
-              {/* Grid lines */}
-              {[0, 50, 100, 150, 200, 250].map(y => (
-                <g key={y}>
-                  <line x1="50" y1={y} x2="1150" y2={y} stroke="#e5e7eb" strokeWidth="1" />
-                  <text x="5" y={y - 5} fontSize="10" fill="#6b7280">
-                    {Math.round((maxLineValue * (300 - y) / 300).toFixed(0))}
-                  </text>
-                </g>
-              ))}
-              
-              {/* Budget line */}
-              <polyline
-                points={lineChartData.map((m, i) => 
-                  `${i * (1100 / 11) + 50},${300 - ((m.budget || 0) / maxLineValue) * 300}`
-                ).join(' ')}
-                fill="none"
-                stroke="#3b82f6"
-                strokeWidth="3"
-                strokeLinejoin="round"
-              />
-              
-              {/* Expense line */}
-              <polyline
-                points={lineChartData.map((m, i) => 
-                  `${i * (1100 / 11) + 50},${300 - ((m.spent || 0) / maxLineValue) * 300}`
-                ).join(' ')}
-                fill="none"
-                stroke="#ef4444"
-                strokeWidth="3"
-                strokeLinejoin="round"
-              />
-              
-              {/* Month labels */}
-              {lineChartData.map((m, i) => (
-                <text 
-                  key={i}
-                  x={i * (1100 / 11) + 50}
-                  y="295"
-                  fontSize="10"
-                  fill="#6b7280"
-                  textAnchor="middle"
-                >
-                  {m.monthShort}
-                </text>
-              ))}
-            </svg>
+             <svg viewBox="0 0 1200 300" className="line-chart">
+               {/* Grid lines */}
+               {[0, 50, 100, 150, 200, 250].map(y => (
+                 <g key={y}>
+                   <line x1="50" y1={y} x2="1150" y2={y} stroke="#e5e7eb" strokeWidth="1" />
+                   <text x="5" y={y - 5} fontSize="10" fill="#6b7280">
+                     {Math.round(maxLineValue * (300 - y) / 300).toFixed(0)}
+                   </text>
+                 </g>
+               ))}
+
+               {/* Budget line */}
+               <polyline
+                 points={lineChartData.map((m, i) => 
+                   `${i * (1100 / 11) + 50},${300 - ((m.budget || 0) / maxLineValue) * 300}`
+                 ).join(' ')}
+                 fill="none"
+                 stroke="#3b82f6"
+                 strokeWidth="3"
+                 strokeLinejoin="round"
+               />
+               
+               {/* Expense line */}
+               <polyline
+                 points={lineChartData.map((m, i) => 
+                   `${i * (1100 / 11) + 50},${300 - ((m.spent || 0) / maxLineValue) * 300}`
+                 ).join(' ')}
+                 fill="none"
+                 stroke="#ef4444"
+                 strokeWidth="3"
+                 strokeLinejoin="round"
+               />
+               
+               {/* Budget dots */}
+               {lineChartData.map((m, i) => (
+                 <circle
+                   key={`budget-dot-${i}`}
+                   cx={i * (1100 / 11) + 50}
+                   cy={300 - ((m.budget || 0) / maxLineValue) * 300}
+                   r="4"
+                   fill="#3b82f6"
+                 />
+               ))}
+               
+               {/* Expense dots */}
+               {lineChartData.map((m, i) => (
+                 <circle
+                   key={`expense-dot-${i}`}
+                   cx={i * (1100 / 11) + 50}
+                   cy={300 - ((m.spent || 0) / maxLineValue) * 300}
+                   r="4"
+                   fill="#ef4444"
+                 />
+               ))}
+               
+               {/* Month labels */}
+               {lineChartData.map((m, i) => (
+                 <text 
+                   key={i}
+                   x={i * (1100 / 11) + 50}
+                   y="295"
+                   fontSize="10"
+                   fill="#6b7280"
+                   textAnchor="middle"
+                 >
+                   {m.monthShort}
+                 </text>
+               ))}
+             </svg>
             
             <div className="line-legend">
               <div className="legend-item">
