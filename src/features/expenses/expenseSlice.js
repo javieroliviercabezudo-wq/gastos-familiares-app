@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+﻿import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { supabase } from '../../supabaseClient'
 
 // Thunks for async operations
@@ -229,9 +229,17 @@ const expenseSlice = createSlice({
         state.budgetItems = state.budgetItems.filter(b => b.id !== action.payload)
       })
       .addCase(fetchCategories.fulfilled, (state, action) => {
-        if (action.payload.length > 0) {
-          state.categories = action.payload
-        }
+        // Keep default categories and add any from Supabase without duplicates
+        const defaultCategories = ['Supermercado','Vehículos','Regalos','Vacaciones','Salud','Servicios','Ropa','Animales','Mantenimiento casa','Librería','Deportes','Varios','Recreación y Salidas']
+        const supabaseCategories = action.payload || []
+        // Combine without duplicates
+        const allCategories = [...defaultCategories]
+        supabaseCategories.forEach(cat => {
+          if (!allCategories.includes(cat)) {
+            allCategories.push(cat)
+          }
+        })
+        state.categories = allCategories
       })
       .addCase(addCategoryToSupabase.fulfilled, (state, action) => {
         if (!state.categories.includes(action.payload)) {
