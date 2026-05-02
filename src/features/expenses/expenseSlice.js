@@ -233,6 +233,14 @@ const expenseSlice = createSlice({
           state.categories = action.payload
         }
       })
+      .addCase(addCategoryToSupabase.fulfilled, (state, action) => {
+        if (!state.categories.includes(action.payload)) {
+          state.categories.push(action.payload)
+        }
+      })
+      .addCase(deleteCategoryFromSupabase.fulfilled, (state, action) => {
+        state.categories = state.categories.filter(c => c !== action.payload)
+      })
   }
 })
 
