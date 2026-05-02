@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { addExpenseToSupabase, deleteExpenseFromSupabase, updateExpenseInSupabase } from '../features/expenses/expenseSlice'
-import { formatDisplayDate } from '../utils/dateUtils'
+import { formatDisplayDate, parseLocalDate } from '../utils/dateUtils'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
@@ -15,6 +15,7 @@ export default function ExpenseForm() {
   const dispatch = useDispatch()
   const categories = useSelector(state => state.expenses.categories)
   const expenses = useSelector(state => state.expenses.expenses)
+  const budgetItems = useSelector(state => state.expenses.budgetItems)
   const [form, setForm] = useState({
     description: '',
     amount: '',
@@ -24,6 +25,26 @@ export default function ExpenseForm() {
   const [editingId, setEditingId] = useState(null)
   const [showAutoDebit, setShowAutoDebit] = useState(false)
   const [selectedMonths, setSelectedMonths] = useState(Array(12).fill(false))
+  
+  // Current month progress
+  const currentMonth = new Date().getMonth()
+  const currentYear = new Date().getFullYear()
+  const monthName = MESES[currentMonth]
+  
+  const monthExpenses = expenses.filter(e => {
+    const d = parseLocalDate(e.date)
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear
+  })
+  const totalSpent = monthExpenses.reduce((sum, e) => sum + e.amount, 0)
+  
+  const totalBudget = budgetItems
+    .filter(b => parseInt(b.month) === currentMonth && b.year === currentYear)
+    .reduce((sum, b) => sum + b.amount, 0)
+  
+  const maxValue = Math.max(totalSpent, totalBudget, 1)
+  const spentPct = (totalSpent / maxValue) * 100
+  const budgetPct = (totalBudget / maxValue) * 100
+  const [showExpandedChart, setShowExpandedChart] = useState(false)
 
   const handleMonthToggle = (index) => {
     const newMonths = [...selectedMonths]
@@ -121,6 +142,73 @@ export default function ExpenseForm() {
 
   return (
     <div>
+      {/* Compact Month Progress - Top of page */}
+      <div 
+        className="compact-month-progress" 
+        onClick={() => setShowExpandedChart(!showExpandedChart)}
+        title="Click para expandir"
+      >
+        <div className="compact-chart-row">
+          <div className="compact-bar-container">
+            <div className="compact-bar-label">Gastos</div>
+            <div className="compact-bar-track">
+              <div 
+                className="compact-bar spent-bar" 
+                style={{ width: spentPct + '%' }}
+              ></div>
+            </div>
+            <span className="compact-bar-value">${totalSpent.toFixed(0)}</span>
+          </div>
+          <div className="compact-bar-container">
+            <div className="compact-bar-label">Presupuesto</div>
+            <div className="compact-bar-track">
+              <div 
+                className="compact-bar budget-bar" 
+                style={{ width: budgetPct + '%' }}
+              ></div>
+            </div>
+            <span className="compact-bar-value">${totalBudget.toFixed(0)}</span>
+          </div>
+        </div>
+        <div className="compact-chart-title">
+          {monthName} - Click para {showExpandedChart ? 'ocultar' : 'expandir'}
+        </div>
+      </div>
+
+      {/* Expanded Chart Modal */}
+      {showExpandedChart && (
+        <div className="expanded-chart-overlay" onClick={() => setShowExpandedChart(false)}>
+          <div className="expanded-chart" onClick={e => e.stopPropagation()}>
+            <h2>Progreso de {monthName}</h2>
+            <div className="bars-container">
+              <div className="bar-group">
+                <div className="bar-wrapper">
+                  <div 
+                    className="bar spent" 
+                    style={{ height: spentPct + '%' }}
+                  >
+                    <span className="bar-value">${totalSpent.toFixed(2)}</span>
+                  </div>
+                </div>
+                <span className="bar-title">Gastos</span>
+              </div>
+              <div className="bar-group">
+                <div className="bar-wrapper">
+                  <div 
+                    className="bar budget" 
+                    style={{ height: budgetPct + '%' }}
+                  >
+                    <span className="bar-value">${totalBudget.toFixed(2)}</span>
+                  </div>
+                </div>
+                <span className="bar-title">Presupuesto</span>
+              </div>
+            </div>
+            <button className="cancel-btn" onClick={() => setShowExpandedChart(false)}>Cerrar</button>
+          </div>
+        </div>
+      )}
+
       <form className="expense-form" onSubmit={handleSubmit}>
         <h2>{editingId ? 'Editar Gasto' : 'Cargar Gasto'}</h2>
         <input 

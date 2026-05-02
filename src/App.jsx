@@ -5,11 +5,9 @@ import { fetchExpenses, fetchBudgetItems, fetchCategories } from './features/exp
 import TabNavigation from './components/TabNavigation'
 import ExpenseForm from './components/ExpenseForm'
 import ExpenseList from './components/ExpenseList'
-import MonthSummary from './components/MonthSummary'
 import BudgetManager from './components/BudgetManager'
 import CategoryManager from './components/CategoryManager'
 import Summary from './components/Summary'
-import YearChart from './components/YearChart'
 import DataManager from './components/DataManager'
 import './App.css'
 
@@ -39,7 +37,6 @@ function App() {
                   <ExpenseList />
                 </div>
                 <div className="right">
-                  <MonthSummary />
                 </div>
               </div>
             } />
