@@ -111,44 +111,76 @@ export default function Summary() {
         </select>
       </div>
 
-      {/* Gráfico Anual - SIEMPRE VISIBLE */}
-      <div className="annual-chart-section">
-        <h3>Evolución de Gastos Anual {selectedYear}</h3>
-        <div className="month-total">
-          <div className="total-row">
-            <span>Total gastos:</span>
-            <span className="amount expense-color">${totalAnnualSpent.toFixed(2)}</span>
-          </div>
-          <div className="total-row">
-            <span>Total presupuestos:</span>
-            <span className="amount budget-color">${totalAnnualBudget.toFixed(2)}</span>
-          </div>
-        </div>
-
-        <div className="monthly-chart">
-          {monthlyData.map(m => (
-            <div key={m.month} className="month-column">
-              <div className="month-bars">
-                <div 
-                  className="month-bar expense-bar" 
-                  style={{ height: `${(m.spent / maxValue) * 100}%` }}
-                  title={`${m.monthName}: $${m.spent.toFixed(2)}`}
-                ></div>
-                <div 
-                  className="month-bar budget-bar" 
-                  style={{ height: `${(m.budget / maxValue) * 100}%` }}
-                  title={`Presupuesto: $${m.budget.toFixed(2)}`}
-                ></div>
-              </div>
-              <div className="month-label">{m.monthShort}</div>
-              <div className="month-values">
-                <span className="expense-color">${Math.round(m.spent)}</span>
-                <span className="budget-color">${Math.round(m.budget)}</span>
-              </div>
+      {/* Gráfico Anual o Tendencia - SE MUESTRA SEGÚN BOTÓN ACTIVO */}
+      {!showTrend && (
+        <div className="annual-chart-section">
+          <h3>Evolución de Gastos Anual {selectedYear}</h3>
+          <div className="month-total">
+            <div className="total-row">
+              <span>Total gastos:</span>
+              <span className="amount expense-color">${totalAnnualSpent.toFixed(2)}</span>
             </div>
-          ))}
+            <div className="total-row">
+              <span>Total presupuestos:</span>
+              <span className="amount budget-color">${totalAnnualBudget.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <div className="monthly-chart">
+            {monthlyData.map(m => (
+              <div key={m.month} className="month-column">
+                <div className="month-bars">
+                  <div 
+                    className="month-bar expense-bar" 
+                    style={{ height: `${(m.spent / maxValue) * 100}%` }}
+                    title={`${m.monthName}: $${m.spent.toFixed(2)}`}
+                  ></div>
+                  <div 
+                    className="month-bar budget-bar" 
+                    style={{ height: `${(m.budget / maxValue) * 100}%` }}
+                    title={`Presupuesto: $${m.budget.toFixed(2)}`}
+                  ></div>
+                </div>
+                <div className="month-label">{m.monthShort}</div>
+                <div className="month-values">
+                  <span className="expense-color">${Math.round(m.spent)}</span>
+                  <span className="budget-color">${Math.round(m.budget)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Tendencia - SE MUESTRA AL HACER CLIC EN BOTÓN */}
+      {showTrend && (
+        <div className="trend-section">
+          <h3>Tendencia (últimos 6 meses)</h3>
+          <div className="trend-chart">
+            {trendData.map((m, index) => (
+              <div key={index} className="trend-column">
+                <div className="trend-bars-container">
+                  <div 
+                    className="trend-bar expense-trend-bar" 
+                    style={{ height: `${(m.spent / maxTrendValue) * 100}%` }}
+                    title={`${m.monthName}: $${m.spent.toFixed(2)}`}
+                  ></div>
+                  <div 
+                    className="trend-bar budget-trend-bar" 
+                    style={{ height: `${(m.budget / maxTrendValue) * 100}%` }}
+                    title={`Presupuesto: $${m.budget.toFixed(2)}`}
+                  ></div>
+                </div>
+                <div className="trend-label">{m.monthName}</div>
+                <div className="trend-values">
+                  <span className="expense-color">${Math.round(m.spent)}</span>
+                  <span className="budget-color">${Math.round(m.budget)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Botones para mostrar/ocultar secciones */}
       <div className="section-buttons">
