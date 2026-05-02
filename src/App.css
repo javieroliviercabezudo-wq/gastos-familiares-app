@@ -605,14 +605,16 @@ header h1 {
   }
   
   .tab-nav {
-    flex-wrap: wrap;
-    gap: 0.25rem;
+    flex-wrap: nowrap;
+    gap: 0.15rem;
+    overflow-x: auto;
   }
   
   .tab-nav button {
-    min-width: calc(50% - 0.25rem);
-    padding: 0.6rem 0.5rem;
-    font-size: 0.85rem;
+    min-width: 0;
+    flex: 1;
+    padding: 0.6rem 0.3rem;
+    font-size: 0.75rem;
   }
   
   .expense-form input,
