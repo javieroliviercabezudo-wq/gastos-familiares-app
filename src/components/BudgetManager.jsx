@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { addBudgetItemToSupabase, deleteBudgetItemFromSupabase, updateBudgetItem } from '../features/expenses/expenseSlice'
+import { parseLocalDate } from '../utils/dateUtils'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const CURRENT_YEAR = new Date().getFullYear()
@@ -9,7 +10,9 @@ const YEARS = Array.from({length: 5}, (_, i) => CURRENT_YEAR - 2 + i)
 export default function BudgetManager() {
   const dispatch = useDispatch()
   const categories = useSelector(state => state.expenses.categories)
-  const budgetItems = useSelector(state => state.expenses.budgetItems)  
+  const budgetItems = useSelector(state => state.expenses.budgetItems)
+  const expenses = useSelector(state => state.expenses.expenses)
+  
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR)
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
@@ -19,8 +22,26 @@ export default function BudgetManager() {
     months: Array(12).fill(false)
   })
   const [editingId, setEditingId] = useState(null)
-
-  // Initialize selectedCategory when categories load
+  
+  // Compact chart: current month vs expenses
+  const currentMonth = new Date().getMonth()
+  const currentYear = new Date().getFullYear()
+  
+  const monthExpenses = expenses.filter(e => {
+    const d = parseLocalDate(e.date)
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear
+  })
+  const totalSpent = monthExpenses.reduce((sum, e) => sum + e.amount, 0)
+  
+  const totalBudgetChart = budgetItems
+    .filter(b => parseInt(b.month) === currentMonth && b.year === currentYear)
+    .reduce((sum, b) => sum + b.amount, 0)
+  
+  const maxValue = Math.max(totalSpent, totalBudgetChart, 1)
+  const spentPct = maxValue > 0 ? (totalSpent / maxValue) * 100 : 0
+  const budgetPct = maxValue > 0 ? (totalBudgetChart / maxValue) * 100 : 0
+  const [showExpandedChart, setShowExpandedChart] = useState(false)
+  
   useEffect(() => {
     if (categories.length > 0 && !selectedCategory) {
       setSelectedCategory(categories[0])
@@ -41,18 +62,18 @@ export default function BudgetManager() {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!form.description || !form.amount) return
-    
+      
     if (editingId) {
       dispatch(updateBudgetItem({ 
         id: editingId, 
-        updates: { description: form.description, amount: form.amount }
+        updates: { description: form.description, amount: parseFloat(form.amount) }
       }))
       setEditingId(null)
     } else {
       const selectedMonths = form.months
         .map((checked, index) => checked ? index : null)
         .filter(val => val !== null)
-      
+          
       if (selectedMonths.length === 0) return
       
       selectedMonths.forEach(month => {
@@ -76,10 +97,14 @@ export default function BudgetManager() {
   }
 
   const handleEdit = (item) => {
+    const months = Array(12).fill(false)
+    if (item.month !== undefined) {
+      months[parseInt(item.month)] = true
+    }
     setForm({
       description: item.description,
       amount: item.amount.toString(),
-      months: Array(12).fill(false)
+      months: months
     })
     setEditingId(item.id)
   }
@@ -92,21 +117,29 @@ export default function BudgetManager() {
     })
     setEditingId(null)
   }
-
-  const getMonthName = (monthNum) => MESES[parseInt(monthNum)]
-
+  
+  // Budget items for SELECTED month/category
   const filteredBudgets = budgetItems.filter(b => 
     b.category === selectedCategory && 
     b.year === selectedYear &&
     parseInt(b.month) === selectedMonth
   )
-
+  
+  // Other budgets (same year/category but different month)
+  const otherBudgets = budgetItems.filter(b => 
+    b.category === selectedCategory && 
+    b.year === selectedYear &&
+    parseInt(b.month) !== selectedMonth
+  )
+  
   const totalBudget = filteredBudgets.reduce((sum, b) => sum + b.amount, 0)
+  const totalOther = otherBudgets.reduce((sum, b) => sum + b.amount, 0)
 
   return (
     <div className="budget-manager">
       <h2>Presupuesto</h2>
       
+      {/* Selectors - visible and wrap properly */}
       <div className="selectors-row">
         <select 
           className="category-selector"
@@ -115,7 +148,7 @@ export default function BudgetManager() {
         >
           {[...categories].sort().map(cat => <option key={cat} value={cat}>{cat}</option>)}
         </select>
-        
+                
         <select 
           className="year-selector"
           value={selectedYear} 
@@ -133,6 +166,7 @@ export default function BudgetManager() {
         </select>
       </div>
 
+      {/* Total for SELECTED month/category */}
       <div className="total-budget">
         <span>Total presupuestado para {selectedCategory} en {MESES[selectedMonth]}:</span>
         <span className="total-amount">${totalBudget.toFixed(2)}</span>
@@ -155,7 +189,7 @@ export default function BudgetManager() {
           min="0" 
           required 
         />
-        
+                
         {!editingId && (
           <div className="months-grid">
             <div className="months-header">
@@ -178,7 +212,7 @@ export default function BudgetManager() {
             </div>
           </div>
         )}
-        
+                
         <div className="form-buttons">
           <button type="submit">{editingId ? 'Actualizar' : 'Agregar Presupuesto'}</button>
           {editingId && (
@@ -187,24 +221,51 @@ export default function BudgetManager() {
         </div>
       </form>
 
-      <h3>{selectedCategory} - {selectedYear} - {MESES[selectedMonth]} - Presupuestos Cargados</h3>
-      {filteredBudgets.length === 0 ? (
-        <p className="empty">No hay presupuestos cargados para {selectedCategory} en {MESES[selectedMonth]}</p>
-      ) : (
-        <div className="budget-list">
-          {filteredBudgets.map(item => (
-            <div key={item.id} className="budget-item">
-              <div className="budget-info">
-                <span className="budget-desc">{item.description}</span>
-                <span className="budget-amount">${parseFloat(item.amount).toFixed(2)}</span>
+      {/* Budget items for SELECTED month first */}
+      {filteredBudgets.length > 0 && (
+        <>
+          <h3>{selectedCategory} - {selectedYear} - {MESES[selectedMonth]} - Presupuestos Cargados</h3>
+          <div className="budget-list">
+            {filteredBudgets.map(item => (
+              <div key={item.id} className="budget-item">
+                <div className="budget-info">
+                  <span className="budget-desc">{item.description}</span>
+                  <span className="budget-amount">${parseFloat(item.amount).toFixed(2)}</span>
+                </div>
+                <div className="budget-actions">
+                  <button className="edit-btn" onClick={() => handleEdit(item)}>✏️</button>
+                  <button className="tag-delete" onClick={() => dispatch(deleteBudgetItemFromSupabase(item.id))}>×</button>
+                </div>
               </div>
-              <div className="budget-actions">
-                <button className="edit-btn" onClick={() => handleEdit(item)}>✏️</button>
-                <button className="tag-delete" onClick={() => dispatch(deleteBudgetItemFromSupabase(item.id))}>×</button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Other months budgets */}
+      {otherBudgets.length > 0 && (
+        <>
+          <h3>Otros Presupuestos - {selectedCategory} - {selectedYear}</h3>
+          <div className="budget-list">
+            {otherBudgets.map(item => (
+              <div key={item.id} className="budget-item">
+                <div className="budget-info">
+                  <span className="budget-desc">{item.description}</span>
+                  <span className="budget-month">{MESES[parseInt(item.month)]}</span>
+                  <span className="budget-amount">${parseFloat(item.amount).toFixed(2)}</span>
+                </div>
+                <div className="budget-actions">
+                  <button className="edit-btn" onClick={() => handleEdit(item)}>✏️</button>
+                  <button className="tag-delete" onClick={() => dispatch(deleteBudgetItemFromSupabase(item.id))}>×</button>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </>
+      )}
+      
+      {filteredBudgets.length === 0 && otherBudgets.length === 0 && (
+        <p className="empty">No hay presupuestos cargados para {selectedCategory} en {selectedYear}</p>
       )}
     </div>
   )
