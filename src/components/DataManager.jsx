@@ -118,6 +118,14 @@ export default function DataManager() {
   }
 
   const handleClearAll = () => {
+    const password = window.prompt(
+      'Para borrar TODOS los datos, ingresa la clave:'
+    )
+    if (password === null) return
+    if (password !== 'C4t3mu') {
+      alert('Clave incorrecta. No se pueden borrar los datos.')
+      return
+    }
     const confirm = window.confirm(
       '¿Estás seguro de borrar TODOS los datos? Esta acción no se puede deshacer.'
     )
