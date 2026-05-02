@@ -66,6 +66,39 @@ export default function Summary() {
   const totalAnnualSpent = monthlyData.reduce((sum, m) => sum + m.spent, 0)
   const totalAnnualBudget = monthlyData.reduce((sum, m) => sum + m.budget, 0)
 
+  // Datos para gráfico de tendencia (últimos 6 meses)
+  const currentMonth = new Date().getMonth()
+  const currentYear = selectedYear
+  const trendData = []
+  
+  for (let i = 5; i >= 0; i--) {
+    let month = currentMonth - i
+    let year = currentYear
+    
+    if (month < 0) {
+      month += 12
+      year -= 1
+    }
+    
+    const monthSpent = expenses.filter(e => {
+      const d = parseLocalDate(e.date)
+      return d.getMonth() === month && d.getFullYear() === year
+    }).reduce((sum, e) => sum + e.amount, 0)
+    
+    const monthBudget = budgetItems
+      .filter(b => parseInt(b.month) === month && b.year === year)
+      .reduce((sum, b) => sum + b.amount, 0)
+    
+    trendData.push({
+      month: month,
+      monthName: MESES_CORTOS[month],
+      spent: monthSpent,
+      budget: monthBudget
+    })
+  }
+  
+  const maxTrendValue = Math.max(...trendData.map(m => Math.max(m.spent, m.budget)), 1)
+
   const maxValue = Math.max(...monthlyData.map(m => Math.max(m.spent, m.budget)), 1)
 
   return (
@@ -182,6 +215,33 @@ export default function Summary() {
               </div>
               <div className="month-label">{m.monthShort}</div>
               <div className="month-values">
+                <span className="expense-color">${Math.round(m.spent)}</span>
+                <span className="budget-color">${Math.round(m.budget)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="trend-chart">
+        <h4 style={{marginTop: '1.5rem'}}>Tendencia (últimos 6 meses)</h4>
+        <div className="trend-bars">
+          {trendData.map((m, index) => (
+            <div key={index} className="trend-column">
+              <div className="trend-bars-container">
+                <div 
+                  className="trend-bar expense-trend-bar" 
+                  style={{ height: `${(m.spent / maxTrendValue) * 100}%` }}
+                  title={`${m.monthName}: $${m.spent.toFixed(2)}`}
+                ></div>
+                <div 
+                  className="trend-bar budget-trend-bar" 
+                  style={{ height: `${(m.budget / maxTrendValue) * 100}%` }}
+                  title={`Presupuesto: $${m.budget.toFixed(2)}`}
+                ></div>
+              </div>
+              <div className="trend-label">{m.monthName}</div>
+              <div className="trend-values">
                 <span className="expense-color">${Math.round(m.spent)}</span>
                 <span className="budget-color">${Math.round(m.budget)}</span>
               </div>
