@@ -70,38 +70,30 @@ export default function Summary() {
       parseInt(b.month) === selectedMonth && 
       b.year === selectedYear) : []
 
-  // Datos para gráfico de tendencia (últimos 6 meses)
-  const currentMonth = new Date().getMonth()
-  const currentYear = selectedYear
-  const trendData = []
+  // Datos para gráfico de líneas (presupuesto vs gastos por mes, todos los meses)
+  const [selectedTrendCategory, setSelectedTrendCategory] = useState(categories[0] || '')
   
-  for (let i = 5; i >= 0; i--) {
-    let month = currentMonth - i
-    let year = currentYear
-    
-    if (month < 0) {
-      month += 12
-      year -= 1
-    }
-    
-    const monthSpent = expenses.filter(e => {
+  const lineChartData = MESES.map((mes, monthIndex) => {
+    const monthExpenses = expenses.filter(e => {
       const d = parseLocalDate(e.date)
-      return d.getMonth() === month && d.getFullYear() === year
-    }).reduce((sum, e) => sum + e.amount, 0)
+      return d.getMonth() === monthIndex && d.getFullYear() === selectedYear && e.category === selectedTrendCategory
+    })
+    const monthSpent = monthExpenses.reduce((sum, e) => sum + e.amount, 0)
     
     const monthBudget = budgetItems
-      .filter(b => parseInt(b.month) === month && b.year === year)
+      .filter(b => b.category === selectedTrendCategory && parseInt(b.month) === monthIndex && b.year === selectedYear)
       .reduce((sum, b) => sum + b.amount, 0)
     
-    trendData.push({
-      month: month,
-      monthName: MESES_CORTOS[month],
+    return {
+      month: monthIndex,
+      monthName: mes,
+      monthShort: MESES_CORTOS[monthIndex],
       spent: monthSpent,
       budget: monthBudget
-    })
-  }
-  
-  const maxTrendValue = Math.max(...trendData.map(m => Math.max(m.spent, m.budget)), 1)
+    }
+  })
+
+  const maxLineValue = Math.max(...lineChartData.map(m => Math.max(m.spent, m.budget)), 1)
 
   return (
     <div className="summary">
@@ -200,7 +192,7 @@ export default function Summary() {
             if (!showTrend) setShowByCategory(false)
           }}
         >
-          {showTrend ? 'Ocultar Tendencia' : 'Ver Tendencia'}
+          {showTrend ? 'Ocultar Gráfico' : 'Ver Gráfico de Líneas'}
         </button>
       </div>
 
@@ -285,32 +277,80 @@ export default function Summary() {
         </div>
       )}
 
-      {/* Tendencia - SE MUESTRA AL HACER CLIC */}
+      {/* Gráfico de Líneas - SE MUESTRA AL HACER CLIC */}
       {showTrend && (
-        <div className="trend-section">
-          <h3>Tendencia (últimos 6 meses)</h3>
-          <div className="trend-chart">
-            {trendData.map((m, index) => (
-              <div key={index} className="trend-column">
-                <div className="trend-bars-container">
-                  <div 
-                    className="trend-bar expense-trend-bar" 
-                    style={{ height: `${(m.spent / maxTrendValue) * 100}%` }}
-                    title={`${m.monthName}: $${m.spent.toFixed(2)}`}
-                  ></div>
-                  <div 
-                    className="trend-bar budget-trend-bar" 
-                    style={{ height: `${(m.budget / maxTrendValue) * 100}%` }}
-                    title={`Presupuesto: $${m.budget.toFixed(2)}`}
-                  ></div>
-                </div>
-                <div className="trend-label">{m.monthName}</div>
-                <div className="trend-values">
-                  <span className="expense-color">${Math.round(m.spent)}</span>
-                  <span className="budget-color">${Math.round(m.budget)}</span>
-                </div>
+        <div className="line-chart-section">
+          <h3>Gráfico de Líneas: {selectedTrendCategory}</h3>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+            <select 
+              value={selectedTrendCategory} 
+              onChange={e => setSelectedTrendCategory(e.target.value)}
+            >
+              {[...categories].sort().map(cat => 
+                <option key={cat} value={cat}>{cat}</option>
+              )}
+            </select>
+          </div>
+          
+          <div className="line-chart-container">
+            <svg viewBox="0 0 1000 300" className="line-chart">
+              {/* Grid lines */}
+              {[0, 50, 100, 150, 200, 250].map(y => (
+                <g key={y}>
+                  <line x1="0" y1={y} x2="1000" y2={y} stroke="#e5e7eb" strokeWidth="1" />
+                  <text x="5" y={y - 5} fontSize="10" fill="#6b7280">
+                    ${Math.round((maxLineValue * (300 - y) / 300).toFixed(0))}
+                  </text>
+                </g>
+              ))}
+              
+              {/* Budget line */}
+              <polyline
+                points={lineChartData.map((m, i) => 
+                  `${i * (1000 / 11) + 40},${300 - (m.budget / maxLineValue) * 300}`
+                ).join(' ')}
+                fill="none"
+                stroke="#3b82f6"
+                strokeWidth="3"
+                strokeLinejoin="round"
+              />
+              
+              {/* Expense line */}
+              <polyline
+                points={lineChartData.map((m, i) => 
+                  `${i * (1000 / 11) + 40},${300 - (m.spent / maxLineValue) * 300}`
+                ).join(' ')}
+                fill="none"
+                stroke="#ef4444"
+                strokeWidth="3"
+                strokeLinejoin="round"
+              />
+              
+              {/* Month labels */}
+              {lineChartData.map((m, i) => (
+                <text 
+                  key={i}
+                  x={i * (1000 / 11) + 40}
+                  y="295"
+                  fontSize="10"
+                  fill="#6b7280"
+                  textAnchor="middle"
+                >
+                  {m.monthShort}
+                </text>
+              ))}
+            </svg>
+            
+            <div className="line-legend">
+              <div className="legend-item">
+                <div className="legend-color budget-legend"></div>
+                <span>Presupuesto</span>
               </div>
-            ))}
+              <div className="legend-item">
+                <div className="legend-color expense-legend"></div>
+                <span>Gastos Reales</span>
+              </div>
+            </div>
           </div>
         </div>
       )}

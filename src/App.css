@@ -1203,3 +1203,51 @@ header h1 {
 .section-btn.active {
   background: #3b82f6;
 }
+
+/* Line Chart Styles */
+.line-chart-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.line-chart-container {
+  background: white;
+  border-radius: var(--radius);
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.line-chart {
+  width: 100%;
+  height: 300px;
+}
+
+.line-legend {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.legend-color {
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.budget-legend {
+  background: #3b82f6;
+}
+
+.expense-legend {
+  background: #ef4444;
+}
