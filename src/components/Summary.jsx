@@ -42,7 +42,7 @@ export default function Summary() {
   const totalAnnualSpent = monthlyData.reduce((sum, m) => sum + m.spent, 0)
   const totalAnnualBudget = monthlyData.reduce((sum, m) => sum + m.budget, 0)
 
-  const maxValue = Math.max(...monthlyData.map(m => Math.max(m.spent, m.budget)), 1)
+  const maxValue = Math.max(...monthlyData.map(m => Math.max(m.spent || 0, m.budget || 0)), 1)
 
   // Gastos del mes seleccionado (para "Por Rubro")
   const filteredExpenses = expenses.filter(e => {
@@ -93,7 +93,7 @@ export default function Summary() {
     }
   })
 
-  const maxLineValue = Math.max(...lineChartData.map(m => Math.max(m.spent, m.budget)), 1)
+  const maxLineValue = Math.max(...lineChartData.map(m => Math.max(m.spent || 0, m.budget || 0)), 1)
 
   return (
     <div className="summary">
@@ -103,76 +103,44 @@ export default function Summary() {
         </select>
       </div>
 
-      {/* Gráfico Anual o Tendencia - SE MUESTRA SEGÚN BOTÓN ACTIVO */}
-      {!showTrend && (
-        <div className="annual-chart-section">
-          <h3>Evolución de Gastos Anual {selectedYear}</h3>
-          <div className="month-total">
-            <div className="total-row">
-              <span>Total gastos:</span>
-              <span className="amount expense-color">${totalAnnualSpent.toFixed(2)}</span>
-            </div>
-            <div className="total-row">
-              <span>Total presupuestos:</span>
-              <span className="amount budget-color">${totalAnnualBudget.toFixed(2)}</span>
-            </div>
+      {/* Gráfico Anual - SIEMPRE VISIBLE */}
+      <div className="annual-chart-section">
+        <h3>Evolución de Gastos Anual {selectedYear}</h3>
+        <div className="month-total">
+          <div className="total-row">
+            <span>Total gastos:</span>
+            <span className="amount expense-color">${totalAnnualSpent.toFixed(2)}</span>
           </div>
-
-          <div className="monthly-chart">
-            {monthlyData.map(m => (
-              <div key={m.month} className="month-column">
-                <div className="month-bars">
-                  <div 
-                    className="month-bar expense-bar" 
-                    style={{ height: `${(m.spent / maxValue) * 100}%` }}
-                    title={`${m.monthName}: $${m.spent.toFixed(2)}`}
-                  ></div>
-                  <div 
-                    className="month-bar budget-bar" 
-                    style={{ height: `${(m.budget / maxValue) * 100}%` }}
-                    title={`Presupuesto: $${m.budget.toFixed(2)}`}
-                  ></div>
-                </div>
-                <div className="month-label">{m.monthShort}</div>
-                <div className="month-values">
-                  <span className="expense-color">${Math.round(m.spent)}</span>
-                  <span className="budget-color">${Math.round(m.budget)}</span>
-                </div>
-              </div>
-            ))}
+          <div className="total-row">
+            <span>Total presupuestos:</span>
+            <span className="amount budget-color">${totalAnnualBudget.toFixed(2)}</span>
           </div>
         </div>
-      )}
 
-      {/* Tendencia - SE MUESTRA AL HACER CLIC EN BOTÓN */}
-      {showTrend && (
-        <div className="trend-section">
-          <h3>Tendencia (últimos 6 meses)</h3>
-          <div className="trend-chart">
-            {trendData.map((m, index) => (
-              <div key={index} className="trend-column">
-                <div className="trend-bars-container">
-                  <div 
-                    className="trend-bar expense-trend-bar" 
-                    style={{ height: `${(m.spent / maxTrendValue) * 100}%` }}
-                    title={`${m.monthName}: $${m.spent.toFixed(2)}`}
-                  ></div>
-                  <div 
-                    className="trend-bar budget-trend-bar" 
-                    style={{ height: `${(m.budget / maxTrendValue) * 100}%` }}
-                    title={`Presupuesto: $${m.budget.toFixed(2)}`}
-                  ></div>
-                </div>
-                <div className="trend-label">{m.monthName}</div>
-                <div className="trend-values">
-                  <span className="expense-color">${Math.round(m.spent)}</span>
-                  <span className="budget-color">${Math.round(m.budget)}</span>
-                </div>
+        <div className="monthly-chart">
+          {monthlyData.map(m => (
+            <div key={m.month} className="month-column">
+              <div className="month-bars">
+                <div 
+                  className="month-bar expense-bar" 
+                  style={{ height: `${(m.spent / maxValue) * 100}%` }}
+                  title={`${m.monthName}: $${m.spent.toFixed(2)}`}
+                ></div>
+                <div 
+                  className="month-bar budget-bar" 
+                  style={{ height: `${(m.budget / maxValue) * 100}%` }}
+                  title={`Presupuesto: $${m.budget.toFixed(2)}`}
+                ></div>
               </div>
-            ))}
-          </div>
+              <div className="month-label">{m.monthShort}</div>
+              <div className="month-values">
+                <span className="expense-color">${Math.round(m.spent)}</span>
+                <span className="budget-color">${Math.round(m.budget)}</span>
+              </div>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
 
       {/* Botones para mostrar/ocultar secciones */}
       <div className="section-buttons">
@@ -293,13 +261,13 @@ export default function Summary() {
           </div>
           
           <div className="line-chart-container">
-            <svg viewBox="0 0 1000 300" className="line-chart">
+            <svg viewBox="0 0 1200 300" className="line-chart">
               {/* Grid lines */}
               {[0, 50, 100, 150, 200, 250].map(y => (
                 <g key={y}>
-                  <line x1="0" y1={y} x2="1000" y2={y} stroke="#e5e7eb" strokeWidth="1" />
+                  <line x1="50" y1={y} x2="1150" y2={y} stroke="#e5e7eb" strokeWidth="1" />
                   <text x="5" y={y - 5} fontSize="10" fill="#6b7280">
-                    ${Math.round((maxLineValue * (300 - y) / 300).toFixed(0))}
+                    {Math.round((maxLineValue * (300 - y) / 300).toFixed(0))}
                   </text>
                 </g>
               ))}
@@ -307,7 +275,7 @@ export default function Summary() {
               {/* Budget line */}
               <polyline
                 points={lineChartData.map((m, i) => 
-                  `${i * (1000 / 11) + 40},${300 - (m.budget / maxLineValue) * 300}`
+                  `${i * (1100 / 11) + 50},${300 - ((m.budget || 0) / maxLineValue) * 300}`
                 ).join(' ')}
                 fill="none"
                 stroke="#3b82f6"
@@ -318,7 +286,7 @@ export default function Summary() {
               {/* Expense line */}
               <polyline
                 points={lineChartData.map((m, i) => 
-                  `${i * (1000 / 11) + 40},${300 - (m.spent / maxLineValue) * 300}`
+                  `${i * (1100 / 11) + 50},${300 - ((m.spent || 0) / maxLineValue) * 300}`
                 ).join(' ')}
                 fill="none"
                 stroke="#ef4444"
@@ -330,7 +298,7 @@ export default function Summary() {
               {lineChartData.map((m, i) => (
                 <text 
                   key={i}
-                  x={i * (1000 / 11) + 40}
+                  x={i * (1100 / 11) + 50}
                   y="295"
                   fontSize="10"
                   fill="#6b7280"
