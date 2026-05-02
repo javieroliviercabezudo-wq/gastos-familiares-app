@@ -3,6 +3,8 @@ import { useSelector, useDispatch } from 'react-redux'
 import { addExpenseToSupabase, deleteExpenseFromSupabase, updateExpenseInSupabase } from '../features/expenses/expenseSlice'
 import { formatDisplayDate } from '../utils/dateUtils'
 
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+
 const getTodayDate = () => {
   // Returns date in YYYY-MM-DD respecting the user's local timezone.
   // Using en-CA locale produces the correct ISO‑like format for <input type="date">.
@@ -20,6 +22,19 @@ export default function ExpenseForm() {
     date: getTodayDate()
   })
   const [editingId, setEditingId] = useState(null)
+  const [showAutoDebit, setShowAutoDebit] = useState(false)
+  const [selectedMonths, setSelectedMonths] = useState(Array(12).fill(false))
+
+  const handleMonthToggle = (index) => {
+    const newMonths = [...selectedMonths]
+    newMonths[index] = !newMonths[index]
+    setSelectedMonths(newMonths)
+  }
+
+  const handleSelectAll = () => {
+    const allSelected = selectedMonths.every(m => m === true)
+    setSelectedMonths(Array(12).fill(!allSelected))
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -37,8 +52,33 @@ export default function ExpenseForm() {
         } 
       }))
       setEditingId(null)
+    } else if (showAutoDebit) {
+      // Cargar gasto con débito automático en múltiples meses
+      const selectedMonthsCount = selectedMonths.filter(m => m).length
+      if (selectedMonthsCount === 0) return
+
+      selectedMonths.forEach((checked, index) => {
+        if (checked) {
+          const month = index + 1
+          const monthStr = month.toString().padStart(2, '0')
+          const date = `${new Date().getFullYear()}-${monthStr}-01`
+          
+          const expense = {
+            id: Date.now().toString() + index,
+            description: form.description,
+            amount: parseFloat(form.amount),
+            category: form.category,
+            date: date
+          }
+          dispatch(addExpenseToSupabase(expense))
+        }
+      })
+
+      // Limpiar selección de meses
+      setSelectedMonths(Array(12).fill(false))
+      setShowAutoDebit(false)
     } else {
-      // Cargar nuevo gasto
+      // Cargar nuevo gasto (mes actual)
       const expense = {
         id: Date.now().toString(),
         ...form,
@@ -75,6 +115,8 @@ export default function ExpenseForm() {
       date: getTodayDate()
     })
     setEditingId(null)
+    setShowAutoDebit(false)
+    setSelectedMonths(Array(12).fill(false))
   }
 
   return (
@@ -106,12 +148,47 @@ export default function ExpenseForm() {
           onChange={e => setForm({...form, date: e.target.value})} 
           required 
         />
+        
         <div className="form-buttons">
-          <button type="submit">{editingId ? 'Actualizar' : 'Agregar Gasto'}</button>
+          {!editingId && (
+            <button 
+              type="button" 
+              className="auto-debit-btn"
+              onClick={() => setShowAutoDebit(!showAutoDebit)}
+            >
+              {showAutoDebit ? 'Ocultar Débito Automático' : 'Débito Automático'}
+            </button>
+          )}
+          <button type="submit">
+            {editingId ? 'Actualizar' : (showAutoDebit ? 'Cargar en Meses Seleccionados' : 'Agregar Gasto')}
+          </button>
           {editingId && (
             <button type="button" className="cancel-btn" onClick={handleCancel}>Cancelar</button>
           )}
         </div>
+
+        {showAutoDebit && !editingId && (
+          <div className="auto-debit-container">
+            <div className="months-header">
+              <span>Seleccionar Meses:</span>
+              <button type="button" className="select-all-btn" onClick={handleSelectAll}>
+                {selectedMonths.every(m => m === true) ? 'Desmarcar Todos' : 'Todo el Año'}
+              </button>
+            </div>
+            <div className="months-checkboxes">
+              {MESES.map((mes, i) => (
+                <label key={i} className="month-checkbox">
+                  <input 
+                    type="checkbox" 
+                    checked={selectedMonths[i]} 
+                    onChange={() => handleMonthToggle(i)} 
+                  />
+                  <span>{mes}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
       </form>
 
       <div className="expense-list">
