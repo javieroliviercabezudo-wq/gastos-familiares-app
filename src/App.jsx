@@ -1,4 +1,4 @@
-import React from 'react'
+import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { fetchExpenses, fetchBudgetItems, fetchCategories } from './features/expenses/expenseSlice'
@@ -8,6 +8,7 @@ import ExpenseList from './components/ExpenseList'
 import BudgetManager from './components/BudgetManager'
 import CategoryManager from './components/CategoryManager'
 import Summary from './components/Summary'
+import YearChart from './components/YearChart'
 import DataManager from './components/DataManager'
 import './App.css'
 
@@ -15,7 +16,7 @@ function App() {
   const dispatch = useDispatch()
   
   // Fetch data on app load
-  React.useEffect(() => {
+  useEffect(() => {
     dispatch(fetchExpenses())
     dispatch(fetchBudgetItems())
     dispatch(fetchCategories())
