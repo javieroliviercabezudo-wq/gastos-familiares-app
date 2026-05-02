@@ -22,25 +22,7 @@ export default function BudgetManager() {
     months: Array(12).fill(false)
   })
   const [editingId, setEditingId] = useState(null)
-  
-  // Compact chart: current month vs expenses
-  const currentMonth = new Date().getMonth()
-  const currentYear = new Date().getFullYear()
-  
-  const monthExpenses = expenses.filter(e => {
-    const d = parseLocalDate(e.date)
-    return d.getMonth() === currentMonth && d.getFullYear() === currentYear
-  })
-  const totalSpent = monthExpenses.reduce((sum, e) => sum + e.amount, 0)
-  
-  const totalBudgetChart = budgetItems
-    .filter(b => parseInt(b.month) === currentMonth && b.year === currentYear)
-    .reduce((sum, b) => sum + b.amount, 0)
-  
-  const maxValue = Math.max(totalSpent, totalBudgetChart, 1)
-  const spentPct = maxValue > 0 ? (totalSpent / maxValue) * 100 : 0
-  const budgetPct = maxValue > 0 ? (totalBudgetChart / maxValue) * 100 : 0
-  const [showExpandedChart, setShowExpandedChart] = useState(false)
+  const [showAllYear, setShowAllYear] = useState(false)
   
   useEffect(() => {
     if (categories.length > 0 && !selectedCategory) {
@@ -139,7 +121,7 @@ export default function BudgetManager() {
     <div className="budget-manager">
       <h2>Presupuesto</h2>
       
-      {/* Selectors - visible and wrap properly */}
+      {/* Selectors */}
       <div className="selectors-row">
         <select 
           className="category-selector"
@@ -160,7 +142,10 @@ export default function BudgetManager() {
         <select 
           className="month-selector"
           value={selectedMonth} 
-          onChange={e => setSelectedMonth(parseInt(e.target.value))}
+          onChange={e => {
+            setSelectedMonth(parseInt(e.target.value))
+            setShowAllYear(false)
+          }}
         >
           {MESES.map((m, i) => <option key={i} value={i}>{m}</option>)}
         </select>
@@ -242,8 +227,8 @@ export default function BudgetManager() {
         </>
       )}
 
-      {/* Other months budgets */}
-      {otherBudgets.length > 0 && (
+      {/* Other months budgets - only show if button clicked */}
+      {showAllYear && otherBudgets.length > 0 && (
         <>
           <h3>Otros Presupuestos - {selectedCategory} - {selectedYear}</h3>
           <div className="budget-list">
@@ -264,6 +249,17 @@ export default function BudgetManager() {
         </>
       )}
       
+      {/* Button to show/hide other months */}
+      {otherBudgets.length > 0 && (
+        <button 
+          className="section-btn" 
+          onClick={() => setShowAllYear(!showAllYear)}
+          style={{marginTop: '1rem'}}
+        >
+          {showAllYear ? 'Ocultar Otros Meses' : 'Ver Todos los Presupuestos del Año'}
+        </button>
+      )}
+
       {filteredBudgets.length === 0 && otherBudgets.length === 0 && (
         <p className="empty">No hay presupuestos cargados para {selectedCategory} en {selectedYear}</p>
       )}
