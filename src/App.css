@@ -1175,3 +1175,31 @@ header h1 {
   font-size: 0.65rem;
   font-weight: 600;
 }
+
+/* Section Buttons */
+.section-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.section-btn {
+  padding: 0.75rem 1.5rem;
+  background: #6b7280;
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.section-btn:hover {
+  background: #4b5563;
+}
+
+.section-btn.active {
+  background: #3b82f6;
+}
